@@ -14,6 +14,8 @@ def main():
     if urls:
         print("Visited URLs:")
         for idx, url in enumerate(urls, start=1):
+            if idx > 513:
+                break
             print(f"{idx}. {url}")
     else:
         print("No URLs found in the database.")
