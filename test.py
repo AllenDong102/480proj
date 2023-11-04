@@ -11,7 +11,7 @@ def get_all_urls():
 
 def main():
     urls = get_all_urls()
-    if urls:
+    if urls: 
         print("Visited URLs:")
         for idx, url in enumerate(urls, start=1):
             if idx > 513:
