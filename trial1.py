@@ -9,12 +9,6 @@ import numpy as np
 from collections import Counter
 from urllib.parse import urlparse
 
-def next_power_of_two(n):
-    power = 1
-    while power < n:
-        power *= 2
-    return power
-
 class BloomFilter:
     def __init__(self, n, fp_rate):
         self.n = n
@@ -93,34 +87,27 @@ class CountSketch:
             counts.append(self.table[i][j] * sign)
         return int(np.median(counts))
 
-# storing 2 element pairs in bf
+# extracting data from file
 file_path = 'adjusted_data.txt'
 with open(file_path, 'r') as file:
     data_contents = file.read()
 elems = data_contents.split('\n')
 
-# gpt wrote this for me
+# parse out URLs
 url_pattern = re.compile(r'\d+\. (.+)')
 urls = []
 
+# get the main part of URL from the data
 for line in elems:
     whole_url = line.split(". ")[1]
     extracted_url = '/'.join(whole_url.split('/')[:3])
     urls.append(extracted_url)
-
-print(urls[:10])
-# storing last 2 elems pair into bf
 
 # function to put WINDOW elems into BF. 
 bloom_filter = BloomFilter(len(urls) - 1, 0.01)
 for i in range(len(urls) - 1):
     pair = urls[i] + " " +  urls[i + 1]
     bloom_filter.insert(pair)
-
-# testing
-# print(bloom_filter.test("chrome://newtab chrome://newtab"))
-
-
 
 # Function to maintain window of 'window_size' and go through all URLs
 # We check for every ith URL, where i > window_size - 1, the i+1th URL
@@ -129,7 +116,6 @@ for i in range(len(urls) - 1):
 
 r_values = [2**8, 2**10, 2**12]
 d_values = [1, 5, 10]
-
 
 def binary_search(count_dict, query_count):
     sorted_counts = sorted(count_dict.items(), key=lambda x: x[1])
@@ -154,7 +140,18 @@ def binary_search(count_dict, query_count):
     else:
         return sorted_counts[right][0]
 
-def process_stream_simulation(all_urls, window_size, d, r):
+
+"""
+We want to Vary on:
+    1) Window Size
+    2) D
+    3) R
+    4) Sketch type
+    5) Number of elems we store in a pair
+"""
+
+
+def process_stream_simulation_min_sketch(all_urls, window_size, d, r):
 
     results = []
 
@@ -167,17 +164,13 @@ def process_stream_simulation(all_urls, window_size, d, r):
         for url in urls:
             c_min = CountMinSketch(d, r)
             for index in range(0, len(urls) - 1):
-                # if the cur elemn = url
                 if urls[index] == url:
-                    # insert the next possible element if the current is equal the url
                     c_min.insert(urls[index + 1]) 
             url_to_cs[url] = c_min
 
         for url in urls:
             query = url_to_cs[url].query(url)
             next_elem = binary_search(true_counts, query)
-            # retrieve the url associated with that count
-
             if bloom_filter.test(url + " " + next_elem): 
                 count += 1
 
@@ -185,7 +178,80 @@ def process_stream_simulation(all_urls, window_size, d, r):
 
     return results
 
-print(process_stream_simulation(urls, 500, 2**8, 5))
+def process_stream_simulation_med_sketch(all_urls, window_size, d, r):
+
+    results = []
+
+    for x in range(0, len(all_urls), window_size): 
+        urls = all_urls[x: x + window_size]
+        true_counts = Counter(urls)
+        url_to_cs = {}
+        count = 0
+        
+        for url in urls:
+            c_med = CountMedianSketch(d, r)
+            for index in range(0, len(urls) - 1):
+                if urls[index] == url:
+                    c_med.insert(urls[index + 1]) 
+            url_to_cs[url] = c_med
+
+        for url in urls:
+            query = url_to_cs[url].query(url)
+            next_elem = binary_search(true_counts, query)
+            if bloom_filter.test(url + " " + next_elem): 
+                count += 1
+
+        results.append(count/len(urls))
+
+    return results
+
+def process_stream_simulation_count_sketch(all_urls, window_size, d, r):
+
+    results = []
+
+    for x in range(0, len(all_urls), window_size): 
+        urls = all_urls[x: x + window_size]
+        true_counts = Counter(urls)
+        url_to_cs = {}
+        count = 0
+        
+        for url in urls:
+            c_s = CountSketch(d, r)
+            for index in range(0, len(urls) - 1):
+                if urls[index] == url:
+                    c_s.insert(urls[index + 1]) 
+            url_to_cs[url] = c_s
+
+        for url in urls:
+            query = url_to_cs[url].query(url)
+            next_elem = binary_search(true_counts, query)
+            if bloom_filter.test(url + " " + next_elem): 
+                count += 1
+
+        results.append(count/len(urls))
+
+    return results
+
+r_values = [2**8, 2**10, 2**12]
+d_values = [1, 5, 10]
+different_sketches = [process_stream_simulation_count_sketch, process_stream_simulation_med_sketch, process_stream_simulation_min_sketch]
+window_sizes = [100, 200, 500]
+
+
+def main():
+    for r_val in r_values:
+        for d_val in d_values:
+            for window_size in window_sizes:
+                for sketch_process in different_sketches:
+                    accuracy = sketch_process(all_urls=urls, window_size=window_size, d=d_val, r=r_val)
+                    trial = {f"Sketch Process Type: {sketch_process.__name__} || Window Size: {window_size} || D: {d_val} || R: {r_val}"}
+                    print("\n")
+                    print(trial)
+                    print(accuracy)
+
+main()
+
+
 
 # def count_dict_binary_search(count_dic, query_count):
 #     sorted_counts = sorted(count_dic.items(), keys=lambda x: x[1])
