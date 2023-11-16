@@ -237,7 +237,6 @@ d_values = [1, 5, 10]
 different_sketches = [process_stream_simulation_count_sketch, process_stream_simulation_med_sketch, process_stream_simulation_min_sketch]
 window_sizes = [100, 200, 500]
 
-
 def main():
     for r_val in r_values:
         for d_val in d_values:
