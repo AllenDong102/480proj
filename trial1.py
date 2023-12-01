@@ -258,24 +258,6 @@ def main():
 
     return results
 
-def plot_results(results):
-    r_values, d_values, sketch_names, accuracies = zip(*[(r, d, sketch, acc) for (r, d, sketch), acc in results.items()])
-    fig, ax = plt.subplots()
-    for sketch in set(sketch_names):
-        sketch_accuracies = [acc for r, d, name, acc in zip(r_values, d_values, sketch_names, accuracies) if name == sketch]
-        ax.plot(sketch_accuracies, label=sketch)
-
-    ax.set_xlabel('Combination Index')
-    ax.set_ylabel('Average Accuracy')
-    ax.set_title('Average Accuracy by Sketch Type, r Value, and d Value')
-    ax.legend()
-
-    plt.show()
-
-
-results=main()
-plot_results(results)
-
 
 # def count_dict_binary_search(count_dic, query_count):
 #     sorted_counts = sorted(count_dic.items(), keys=lambda x: x[1])
