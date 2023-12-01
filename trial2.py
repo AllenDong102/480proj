@@ -239,42 +239,17 @@ different_sketches = [process_stream_simulation_count_sketch, process_stream_sim
 window_sizes = [100, 200, 500]
 
 def main():
-    results = {}  # Dictionary to store results
-
     for r_val in r_values:
         for d_val in d_values:
-            for sketch_process in different_sketches:
-                total_accuracy = 0
-                count = 0
-
-                for window_size in window_sizes:
+            for window_size in window_sizes:
+                for sketch_process in different_sketches:
                     accuracy = sketch_process(all_urls=urls, window_size=window_size, d=d_val, r=r_val)
-                    total_accuracy += sum(accuracy)
-                    count += len(accuracy)
+                    trial = {f"Sketch Process Type: {sketch_process.__name__} || Window Size: {window_size} || D: {d_val} || R: {r_val}"}
+                    print("\n")
+                    print(trial)
+                    print(accuracy)
 
-                average_accuracy = total_accuracy / count if count != 0 else 0
-                key = (r_val, d_val, sketch_process.__name__)
-                results[key] = average_accuracy
-
-    return results
-
-def plot_results(results):
-    r_values, d_values, sketch_names, accuracies = zip(*[(r, d, sketch, acc) for (r, d, sketch), acc in results.items()])
-    fig, ax = plt.subplots()
-    for sketch in set(sketch_names):
-        sketch_accuracies = [acc for r, d, name, acc in zip(r_values, d_values, sketch_names, accuracies) if name == sketch]
-        ax.plot(sketch_accuracies, label=sketch)
-
-    ax.set_xlabel('Combination Index')
-    ax.set_ylabel('Average Accuracy')
-    ax.set_title('Average Accuracy by Sketch Type, r Value, and d Value')
-    ax.legend()
-
-    plt.show()
-
-
-results=main()
-plot_results(results)
+main()
 
 
 # def count_dict_binary_search(count_dic, query_count):
