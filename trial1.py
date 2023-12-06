@@ -88,7 +88,7 @@ class CountSketch:
         return int(np.median(counts))
 
 # extracting data from file
-file_path = 'adjusted_data.txt'
+file_path = 'dataset4.txt'
 with open(file_path, 'r') as file:
     data_contents = file.read()
 elems = data_contents.split('\n')
@@ -233,9 +233,8 @@ def process_stream_simulation_count_sketch(all_urls, window_size, d, r):
 
     return results
 
-r_values = [2**8, 2**10, 2**12]
+r_values = [2**2, 2**4, 2**8]
 d_values = [1, 5, 10]
-different_sketches = [process_stream_simulation_count_sketch, process_stream_simulation_med_sketch, process_stream_simulation_min_sketch]
 window_sizes = [100, 200, 500]
 
 def main():
@@ -243,30 +242,53 @@ def main():
 
     for r_val in r_values:
         for d_val in d_values:
-            for sketch_process in different_sketches:
-                total_accuracy = 0
-                count = 0
-
-                for window_size in window_sizes:
-                    accuracy = sketch_process(all_urls=urls, window_size=window_size, d=d_val, r=r_val)
-                    total_accuracy += sum(accuracy)
-                    count += len(accuracy)
-
-                average_accuracy = total_accuracy / count if count != 0 else 0
-                key = (r_val, d_val, sketch_process.__name__)
-                results[key] = average_accuracy
+            for window_size in window_sizes:
+                accuracy = process_stream_simulation_count_sketch(all_urls=urls, window_size=window_size, d=d_val, r=r_val)
+                
+                key = (r_val, d_val, window_size)
+                results[key] = accuracy
 
     return results
 
+results = main()
+print(len(results))
+    
+# Extracting data for the plots
+# For r_val
+accuracy_r = [sum(results.get((r, 5, 200), [])) / len(results.get((r, 5, 200), [])) for r in r_values]
 
-# def count_dict_binary_search(count_dic, query_count):
-#     sorted_counts = sorted(count_dic.items(), keys=lambda x: x[1])
+# For d_val
+accuracy_d = [sum(results.get((2**4, d, 200), [])) / len(results.get((2**4, d, 200), [])) for d in d_values]
 
-#     left, right = 0, len(sorted_counts) - 1
-#     while left <= right:
-#         mid = left + (right - left) // 2
+# For window_size
+accuracy_window = [sum(results.get((2**4, 5, ws), [])) / len(results.get((2**4, 5, ws), [])) for ws in window_sizes]
 
-#count_dict = {'id1': 10, 'id2': 20, 'id3': 30, 'id4': 40}
-#query_count = 26
-#closest_id = find_closest_id(count_dict, query_count)
-#print(f"The ID with the count closest to {query_count} is {closest_id}.")
+print(accuracy_r)
+print(accuracy_d)
+print(accuracy_window)
+
+
+# Plotting
+plt.figure(figsize=(15, 5))
+
+# Plot for r_val
+plt.subplot(1, 3, 1)
+plt.plot(r_values, accuracy_r, marker='o')
+plt.title('Accuracy vs r_val')
+plt.xlabel('r_val')
+plt.ylabel('Accuracy')
+
+# Plot for d_val
+plt.subplot(1, 3, 2)
+plt.plot(d_values, accuracy_d, marker='o', color='green')
+plt.title('Accuracy vs d_val')
+plt.xlabel('d_val')
+
+# Plot for window_size
+plt.subplot(1, 3, 3)
+plt.plot(window_sizes, accuracy_window, marker='o', color='red')
+plt.title('Accuracy vs window_size')
+plt.xlabel('window_size')
+
+plt.tight_layout()
+plt.show()
