@@ -251,8 +251,8 @@ def main():
     return results
 
 results = main()
-print(len(results))
-    
+
+########## ACCURACY VS CHANGING EACH PARAM ############
 # Extracting data for the plots
 # For r_val
 accuracy_r = [sum(results.get((r, 5, 200), [])) / len(results.get((r, 5, 200), [])) for r in r_values]
@@ -289,6 +289,25 @@ plt.subplot(1, 3, 3)
 plt.plot(window_sizes, accuracy_window, marker='o', color='red')
 plt.title('Accuracy vs window_size')
 plt.xlabel('window_size')
+
+plt.tight_layout()
+plt.show()
+
+############ ACCURACY FOR EACH WINDOW FOR EACH COMBINATION OF PARAMS ###############
+
+# Setting up the plot
+fig, axs = plt.subplots(9, 3, figsize=(15, 30))
+
+for i, ((r_val, d_val, window_size), accuracies) in enumerate(results.items()):
+    row = i // 3
+    col = i % 3
+    ax = axs[row, col]
+    
+    # Plotting the bar graph
+    ax.bar(range(1, len(accuracies) + 1), accuracies)
+    ax.set_title(f"r={r_val}, d={d_val}, window={window_size}")
+    ax.set_xlabel("Window #")
+    ax.set_ylabel("Accuracy")
 
 plt.tight_layout()
 plt.show()
