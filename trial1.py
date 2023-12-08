@@ -233,7 +233,7 @@ def process_stream_simulation_count_sketch(all_urls, window_size, d, r):
 
     return results
 
-r_values = [2**2, 2**4, 2**8]
+r_values = [2**4, 2**6, 2**8]
 d_values = [1, 5, 10]
 window_sizes = [100, 200, 500]
 
@@ -255,13 +255,13 @@ results = main()
 ########## ACCURACY VS CHANGING EACH PARAM ############
 # Extracting data for the plots
 # For r_val
-accuracy_r = [sum(results.get((r, 5, 200), [])) / len(results.get((r, 5, 200), [])) for r in r_values]
+accuracy_r = [sum(results.get((r, d_values[1], window_sizes[1]), [])) / len(results.get((r, d_values[1], window_sizes[1]), [])) for r in r_values]
 
 # For d_val
-accuracy_d = [sum(results.get((2**4, d, 200), [])) / len(results.get((2**4, d, 200), [])) for d in d_values]
+accuracy_d = [sum(results.get((r_values[1], d, window_sizes[1]), [])) / len(results.get((r_values[1], d, window_sizes[1]), [])) for d in d_values]
 
 # For window_size
-accuracy_window = [sum(results.get((2**4, 5, ws), [])) / len(results.get((2**4, 5, ws), [])) for ws in window_sizes]
+accuracy_window = [sum(results.get((r_values[1], d_values[1], ws), [])) / len(results.get((r_values[1], d_values[1], ws), [])) for ws in window_sizes]
 
 print(accuracy_r)
 print(accuracy_d)
@@ -293,7 +293,7 @@ plt.xlabel('window_size')
 plt.tight_layout()
 plt.show()
 
-############ ACCURACY FOR EACH WINDOW FOR EACH COMBINATION OF PARAMS ###############
+############ ACCURACY FOR EACH WINDOW FOR EACH COMBINATION OF PARAMS
 
 # Setting up the plot
 fig, axs = plt.subplots(9, 3, figsize=(15, 30))
@@ -311,3 +311,25 @@ for i, ((r_val, d_val, window_size), accuracies) in enumerate(results.items()):
 
 plt.tight_layout()
 plt.show()
+
+key = (2**4, 1, 100)
+
+# Check if the key exists in the results
+if key not in results:
+    print(f"No results found for r={key[0]}, d={key[1]}, window={key[2]}")
+else:
+    # Retrieve accuracies for the specified key
+    accuracies = results[key]
+
+    # Create a new figure for the plot
+    plt.figure(figsize=(10, 6))
+
+    # Plotting the bar graph
+    plt.bar(range(1, len(accuracies) + 1), accuracies)
+    plt.title(f"Accuracy for r={key[0]}, d={key[1]}, window={key[2]}")
+    plt.xlabel("Window #")
+    plt.ylabel("Accuracy")
+
+    # Show the plot
+    plt.tight_layout()
+    plt.show()
