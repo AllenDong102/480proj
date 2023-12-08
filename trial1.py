@@ -88,7 +88,7 @@ class CountSketch:
         return int(np.median(counts))
 
 # extracting data from file
-file_path = 'dataset4.txt'
+file_path = 'dataset3.txt'
 with open(file_path, 'r') as file:
     data_contents = file.read()
 elems = data_contents.split('\n')
@@ -289,7 +289,7 @@ plt.subplot(1, 3, 3)
 plt.plot(window_sizes, accuracy_window, marker='o', color='red')
 plt.title('Accuracy vs window_size')
 plt.xlabel('window_size')
-
+plt.savefig(f"accuracy_vary_param.png")
 plt.tight_layout()
 plt.show()
 
@@ -312,24 +312,27 @@ for i, ((r_val, d_val, window_size), accuracies) in enumerate(results.items()):
 plt.tight_layout()
 plt.show()
 
-key = (2**4, 1, 100)
+############# SINGULAR PLOT OF ACCURACIES ACROSS WINDOW FOR A SPECIFIC KEY #################
 
-# Check if the key exists in the results
-if key not in results:
-    print(f"No results found for r={key[0]}, d={key[1]}, window={key[2]}")
-else:
-    # Retrieve accuracies for the specified key
-    accuracies = results[key]
+for r in r_values:
+    for d in d_values:
+        for w in window_sizes:
+            key = (r, d, w)
+            # Check if the key exists in the results
+            if key not in results:
+                print(f"No results found for r={key[0]}, d={key[1]}, window={key[2]}")
+            else:
+                # Retrieve accuracies for the specified key
+                accuracies = results[key]
+                # Create a new figure for the plot
+                plt.figure(figsize=(10, 6))
+                # Plotting the bar graph
+                plt.bar(range(1, len(accuracies) + 1), accuracies)
+                plt.title(f"Accuracy for r={key[0]}, d={key[1]}, window={key[2]}")
+                plt.xlabel("Window #")
+                plt.ylabel("Accuracy")
+                plt.savefig(f"accuracy_r{key[0]}_d{key[1]}_window{key[2]}.png")
 
-    # Create a new figure for the plot
-    plt.figure(figsize=(10, 6))
-
-    # Plotting the bar graph
-    plt.bar(range(1, len(accuracies) + 1), accuracies)
-    plt.title(f"Accuracy for r={key[0]}, d={key[1]}, window={key[2]}")
-    plt.xlabel("Window #")
-    plt.ylabel("Accuracy")
-
-    # Show the plot
-    plt.tight_layout()
-    plt.show()
+                # Show the plot
+                plt.tight_layout()
+                #plt.show()
